@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radiomaster ELRS Setup Guide — ECE/MAE 148</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --warn: #d29922;
+    --danger: #f85149;
+    --tip: #58a6ff;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --sidebar-w: 260px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── SIDEBAR ───────────────────────────── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .sidebar-header {
+    padding: 20px 18px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-header .course-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .sidebar-header h1 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .sidebar-header .sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  nav { padding: 12px 0; flex: 1; }
+
+  nav .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 8px 18px 4px;
+  }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color .15s, background .15s;
+    border-left: 3px solid transparent;
+  }
+  nav a:hover { color: var(--text); background: var(--surface2); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,.07); }
+  nav a .phase-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  nav a.active .phase-num { border-color: var(--accent); color: var(--accent); }
+
+  .sidebar-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .sidebar-footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── MAIN ───────────────────────────────── */
+  main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    max-width: 860px;
+    padding: 48px 48px 80px;
+  }
+
+  /* Hero */
+  .hero {
+    margin-bottom: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .badge-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .badge-blue { color: var(--accent); border-color: rgba(88,166,255,.4); background: rgba(88,166,255,.08); }
+  .badge-green { color: var(--accent2); border-color: rgba(63,185,80,.4); background: rgba(63,185,80,.08); }
+  .badge-yellow { color: var(--warn); border-color: rgba(210,153,34,.4); background: rgba(210,153,34,.08); }
+
+  .hero h2 {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .hero h2 strong { font-weight: 600; }
+  .hero p { color: var(--muted); font-size: 14px; max-width: 560px; }
+
+  /* Update notice */
+  .update-notice {
+    background: rgba(63,185,80,.08);
+    border: 1px solid rgba(63,185,80,.3);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+  .update-notice strong { color: var(--accent2); }
+
+  /* Section */
+  section { margin-bottom: 52px; scroll-margin-top: 24px; }
+
+  h2.section-title {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2.section-title .phase-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(88,166,255,.1);
+    border: 1px solid rgba(88,166,255,.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  h3.sub-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 24px 0 10px;
+    font-family: var(--mono);
+    letter-spacing: .02em;
+  }
+
+  p { color: #c9d1d9; margin-bottom: 12px; }
+
+  /* Quick Reference Table */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .ref-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+  }
+  .ref-item .ref-key {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 3px;
+  }
+  .ref-item .ref-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .ref-item .ref-val.green { color: var(--accent2); }
+  .ref-item .ref-val.yellow { color: var(--warn); }
+
+  /* System diagram */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .diagram .node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .diagram .node .node-label { color: var(--text); font-weight: 600; }
+  .diagram .node .node-desc { color: var(--muted); font-size: 11px; }
+  .diagram .node.pi { border-color: rgba(88,166,255,.5); }
+  .diagram .connector {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .diagram .connector::before { content: '↕'; font-size: 14px; color: var(--border); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: #c9d1d9;
+    vertical-align: top;
+  }
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 600; }
+  td code { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* Callout boxes */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13.5px;
+    display: flex;
+    gap: 12px;
+  }
+  .callout .icon { font-size: 16px; flex-shrink: 0; line-height: 1.6; }
+  .callout-warn { background: rgba(210,153,34,.08); border: 1px solid rgba(210,153,34,.3); }
+  .callout-warn strong { color: var(--warn); }
+  .callout-tip { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+  .callout-tip strong { color: var(--tip); }
+  .callout-ok { background: rgba(63,185,80,.08); border: 1px solid rgba(63,185,80,.25); }
+  .callout-ok strong { color: var(--accent2); }
+
+  /* Code blocks */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 12px 0 20px;
+  }
+  pre code {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+    line-height: 1.6;
+  }
+  pre code .comment { color: var(--muted); }
+
+  /* Lists */
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 14px;
+    color: #c9d1d9;
+  }
+  li { margin-bottom: 6px; }
+  li code { font-family: var(--mono); font-size: 12px; color: var(--accent); background: rgba(88,166,255,.1); padding: 1px 5px; border-radius: 3px; }
+
+  /* Settings table */
+  .settings-table td:nth-child(2) { font-family: var(--mono); font-size: 12px; color: var(--accent2); }
+
+  /* Checkbox style */
+  .cb-on { color: var(--accent2); }
+  .cb-off { color: var(--muted); }
+
+  /* Model ID table */
+  .model-row td:first-child { color: var(--warn); }
+
+  /* Troubleshoot */
+  .trouble-table td:first-child { color: var(--danger); font-size: 12px; }
+  .trouble-table td:last-child { color: #c9d1d9; font-size: 13px; font-family: var(--sans); font-weight: normal; }
+
+  /* IP table */
+  .ip-table td:nth-child(2) { font-family: var(--mono); color: var(--accent); }
+
+  /* Phase progress indicator */
+  .phase-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .phase-pip {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .15s;
+  }
+  .phase-pip:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Scroll to top */
+  #top-anchor { position: absolute; top: 0; }
+
+  /* ELRS version notice */
+  .version-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .version-box h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .version-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .version-row:last-child { border-bottom: none; }
+  .version-row .vname { color: var(--text); font-family: var(--mono); }
+  .version-row .vstatus { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-family: var(--mono); }
+  .vstatus.locked { background: rgba(63,185,80,.15); color: var(--accent2); border: 1px solid rgba(63,185,80,.3); }
+  .vstatus.ok { background: rgba(88,166,255,.12); color: var(--accent); border: 1px solid rgba(88,166,255,.3); }
+  .vstatus.breaking { background: rgba(248,81,73,.12); color: var(--danger); border: 1px solid rgba(248,81,73,.3); }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    main { margin-left: 0; padding: 24px 20px 60px; }
+    .ref-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="top-anchor"></div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="course-tag">ECE / MAE 148 · Triton AI</div>
+    <h1>Radiomaster ELRS<br>Setup Guide</h1>
+    <div class="sub">UCSD · RC Car Controller</div>
+  </div>
+  <nav>
+    <div class="section-label">Overview</div>
+    <a href="#overview" class="active">System Architecture</a>
+    <a href="#quick-ref">Quick Reference</a>
+
+    <div class="section-label">Setup Phases</div>
+    <a href="#phase1"><span class="phase-num">1</span> Prerequisites &amp; Hardware</a>
+    <a href="#phase2"><span class="phase-num">2</span> Flash the Arduino</a>
+    <a href="#phase3"><span class="phase-num">3</span> Flash the TX</a>
+    <a href="#phase4"><span class="phase-num">4</span> Flash the RX</a>
+    <a href="#phase5"><span class="phase-num">5</span> Bind Controller to Car</a>
+    <a href="#phase6"><span class="phase-num">6</span> VESC &amp; Final Config</a>
+
+    <div class="section-label">Reference</div>
+    <a href="#troubleshoot">Troubleshooting</a>
+    <a href="#appendix">Receiver IPs &amp; Links</a>
+    <a href="#elrs-versions">ELRS Version Guide</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="https://github.com/Triton-AI/ELRSController" target="_blank">ELRSController repo ↗</a><br>
+    <a href="https://expresslrs.org" target="_blank" style="margin-top:4px;display:block;">expresslrs.org ↗</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge-row">
+      <span class="badge badge-blue">ECE / MAE 148</span>
+      <span class="badge badge-green">Triton AI · UCSD</span>
+      <span class="badge badge-yellow">ELRS 3.3.2</span>
+    </div>
+    <h2>Radiomaster ELRS<br><strong>Master Setup Guide</strong></h2>
+    <p>End-to-end instructions for flashing and integrating the Radiomaster Pocket controller with an RC car running Raspberry Pi 5.</p>
+  </div>
+
+  <div class="update-notice">
+    <strong>🆕 Updated for Raspberry Pi 5</strong> — This guide reflects the switch from Jetson Nano to Raspberry Pi 5.
+    The Arduino still connects via USB and enumerates as a joystick at <code style="font-family:monospace;font-size:12px;color:#3fb950">/dev/input/js*</code> — everything works the same way.
+    See the <a href="#elrs-versions" style="color:#58a6ff">ELRS Version Guide</a> below for notes on using newer firmware versions.
+  </div>
+
+  <!-- Quick nav pills -->
+  <div class="phase-nav">
+    <a class="phase-pip" href="#phase1">Phase 1 · Hardware</a>
+    <a class="phase-pip" href="#phase2">Phase 2 · Arduino</a>
+    <a class="phase-pip" href="#phase3">Phase 3 · TX</a>
+    <a class="phase-pip" href="#phase4">Phase 4 · RX</a>
+    <a class="phase-pip" href="#phase5">Phase 5 · Bind</a>
+    <a class="phase-pip" href="#phase6">Phase 6 · VESC</a>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <section id="overview">
+    <h2 class="section-title">How the System Works</h2>
+    <p>Before following any steps, understand what you are building:</p>
+    <div class="diagram">
+      <div class="node">
+        <span class="node-label">Radiomaster Pocket (TX)</span>
+        <span class="node-desc">Controller — in your hands</span>
+      </div>
+      <div class="connector">ELRS 2.4 GHz RF link &nbsp;(wireless)</div>
+      <div class="node">
+        <span class="node-label">ELRS Receiver RP3 (RX)</span>
+        <span class="node-desc">On the car</span>
+      </div>
+      <div class="connector">SBUS serial @ 115,200 baud &nbsp;(wired)</div>
+      <div class="node">
+        <span class="node-label">Arduino Pro Micro (HID bridge)</span>
+        <span class="node-desc">Translates SBUS → USB joystick</span>
+      </div>
+      <div class="connector">USB &nbsp;(appears as a joystick to the Pi)</div>
+      <div class="node pi">
+        <span class="node-label">Raspberry Pi 5</span>
+        <span class="node-desc">Reads joystick at /dev/input/js*</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── QUICK REF ── -->
+  <section id="quick-ref">
+    <h2 class="section-title">Quick Reference</h2>
+    <div class="ref-grid">
+      <div class="ref-item">
+        <div class="ref-key">ELRS Version (locked)</div>
+        <div class="ref-val">3.3.2</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">Binding Phrase (case-sensitive)</div>
+        <div class="ref-val yellow">TritonAI</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">TX Device</div>
+        <div class="ref-val" style="font-size:11px;color:#c9d1d9">RadioMaster Pocket Internal 2.4GHz TX</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">RX Device</div>
+        <div class="ref-val" style="font-size:11px;color:#c9d1d9">RadioMaster RP3 Diversity 2.4GHz RX</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">TX Flash Method</div>
+        <div class="ref-val">EdgeTxPassthrough</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">RX Flash Method</div>
+        <div class="ref-val">WiFi</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">RX Baud Rate</div>
+        <div class="ref-val green">115,200</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">RX Output Protocol</div>
+        <div class="ref-val">SBUS</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">Arduino Board</div>
+        <div class="ref-val">Leonardo [env:leonardo]</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">Lab WiFi SSID</div>
+        <div class="ref-val" style="color:#c9d1d9;font-size:12px">UCSDRoboCar / UCSDrobocars2018</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">ELRS TX Hotspot</div>
+        <div class="ref-val" style="color:#c9d1d9;font-size:12px">ExpressLRS TX / expresslrs</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-key">ELRS RX Hotspot</div>
+        <div class="ref-val" style="color:#c9d1d9;font-size:12px">ExpressLRS RX / expresslrs</div>
+      </div>
+    </div>
+
+    <h3 class="sub-title">Model IDs</h3>
+    <table class="model-row">
+      <tr><th>ID</th><th>Car</th></tr>
+      <tr><td>1</td><td>Yellow</td></tr>
+      <tr><td>2</td><td>Blue</td></tr>
+      <tr><td>3</td><td>1/5th Scale</td></tr>
+      <tr><td>4</td><td>Kart</td></tr>
+      <tr><td>5</td><td>Jack</td></tr>
+    </table>
+  </section>
+
+  <!-- ── PHASE 1 ── -->
+  <section id="phase1">
+    <h2 class="section-title"><span class="phase-badge">Phase 1</span> Prerequisites &amp; Hardware</h2>
+
+    <h3 class="sub-title">1.1 Required Hardware</h3>
+    <ul>
+      <li>Radiomaster Pocket controller (TX) — insert <strong>both</strong> 3.7 V LiPo cells before use</li>
+      <li>RadioMaster RP3 Diversity 2.4 GHz receiver (RX) — mounts on the car</li>
+      <li>Arduino Pro Micro (Leonardo-compatible) — the HID joystick bridge</li>
+      <li>USB-C cable — for flashing the TX (must use the <strong>TOP</strong> port on the controller)</li>
+      <li>Micro-USB cable — for flashing the Arduino and connecting to the Pi</li>
+      <li>Buck converter — to power the RX (5 V regulated, sufficient current)</li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Warning — LiPo cells</strong><br>Insert both cells before powering on the controller. The LED illuminates with just one cell, but the radio will NOT transmit. Students frequently miss this.</div>
+    </div>
+
+    <h3 class="sub-title">1.2 Required Software</h3>
+    <table>
+      <tr><th>Tool</th><th>Details</th></tr>
+      <tr><td>ExpressLRS Configurator</td><td>v3.3.2 — <a href="https://expresslrs.org/quick-start/installing-configurator/" style="color:var(--accent)">expresslrs.org/quick-start/installing-configurator/</a></td></tr>
+      <tr><td>VSCode + PlatformIO</td><td>For flashing the Arduino — install PlatformIO as a VSCode extension</td></tr>
+      <tr><td>Git</td><td>To clone the ELRSController repo</td></tr>
+    </table>
+
+    <h3 class="sub-title">1.3 Wiring</h3>
+    <p>The RX, Arduino, and Raspberry Pi 5 wire together as follows:</p>
+    <ul>
+      <li><strong>RX signal pin → Arduino RX pin</strong> &nbsp;(SBUS output from receiver)</li>
+      <li><strong>RX power → Buck converter 5 V</strong> &nbsp;(NOT the Arduino 5 V pin — insufficient current)</li>
+      <li><strong>Arduino → Raspberry Pi 5</strong> via Micro-USB &nbsp;(enumerates as a HID joystick at <code>/dev/input/js*</code>)</li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Warning — RX Power</strong><br>The RP3 draws more current than the Arduino 5 V pin can supply. Powering the RX from the Arduino causes it to reset every time it tries to enable WiFi mode. Always use the buck converter.</div>
+    </div>
+  </section>
+
+  <!-- ── PHASE 2 ── -->
+  <section id="phase2">
+    <h2 class="section-title"><span class="phase-badge">Phase 2</span> Flash the Arduino</h2>
+
+    <h3 class="sub-title">2.1 Clone the Repository</h3>
+    <pre><code>git clone https://github.com/Triton-AI/ELRSController.git</code></pre>
+
+    <h3 class="sub-title">2.2 Install PlatformIO</h3>
+    <ol>
+      <li>Open VSCode and go to Extensions (<code>Ctrl+Shift+X</code>)</li>
+      <li>Search for <strong>PlatformIO IDE</strong> and install it</li>
+      <li>After installation, click the PlatformIO icon in the left sidebar</li>
+      <li>Choose <strong>Open Project</strong> and select the cloned ELRSController folder</li>
+    </ol>
+
+    <h3 class="sub-title">2.3 Verify platformio.ini</h3>
+    <p>The project should already be configured correctly. Confirm the file contains:</p>
+    <pre><code>[env:leonardo]
+platform  = atmelavr
+board     = leonardo
+framework = arduino
+
+<span class="comment">; build_flags = -DDEBUG_LOG   ← keep this commented out!</span></code></pre>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Do NOT enable DEBUG_LOG</strong><br>The DEBUG_LOG flag enables Serial output which directly conflicts with the USB HID joystick interface. If enabled, the Raspberry Pi will not see the Arduino as a joystick.</div>
+    </div>
+
+    <h3 class="sub-title">2.4 Upload to the Arduino</h3>
+    <ol>
+      <li>Plug the Arduino Pro Micro via Micro-USB</li>
+      <li>Check the COM port shown in the PlatformIO status bar at the bottom of VSCode</li>
+      <li>Click the Upload button (→) or press <code>Ctrl+Alt+U</code></li>
+      <li>Wait for the SUCCESS message</li>
+    </ol>
+
+    <div class="callout callout-tip">
+      <span class="icon">💡</span>
+      <div><strong>Upload failing?</strong><br>Double-press the reset button on the Arduino immediately before clicking Upload. This forces it into bootloader mode and usually resolves port errors.</div>
+    </div>
+  </section>
+
+  <!-- ── PHASE 3 ── -->
+  <section id="phase3">
+    <h2 class="section-title"><span class="phase-badge">Phase 3</span> Flash the Transmitter (TX)</h2>
+
+    <h3 class="sub-title">3.1 Prepare the Controller</h3>
+    <ol>
+      <li>Insert both LiPo cells and power on the controller</li>
+      <li>Connect via the <strong>TOP USB-C port</strong> (not the bottom charging port)</li>
+      <li>On the controller screen, navigate to the USB dialog using the cylindrical roller (press = select)</li>
+      <li>Select the <strong>third option: USB Serial (VCP)</strong> — do not select USB HID or USB Storage</li>
+    </ol>
+
+    <h3 class="sub-title">3.2 Configure ExpressLRS Configurator — TX Target</h3>
+    <p>Open ExpressLRS Configurator. Under Firmware Version, select <strong>Official Releases → 3.3.2</strong>. Do not check Show Pre-releases.</p>
+    <table class="settings-table">
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td>Device category</td><td>RadioMaster 2.4 GHz</td></tr>
+      <tr><td>Device</td><td>RadioMaster Pocket Internal 2.4GHz TX</td></tr>
+      <tr><td>Flashing Method</td><td>EdgeTxPassthrough</td></tr>
+    </table>
+
+    <h3 class="sub-title">3.3 TX Device Options</h3>
+    <table class="settings-table">
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td>REGULATORY_DOMAIN_EU_CE_2400</td><td><span class="cb-off">☐ Leave unchecked</span></td></tr>
+      <tr><td>REGULATORY_DOMAIN_ISM_2400</td><td><span class="cb-on">☑ Check this</span></td></tr>
+      <tr><td>BINDING_PHRASE</td><td><span class="cb-on">☑ Check — enter: TritonAI</span></td></tr>
+      <tr><td>UART_INVERTED</td><td><span class="cb-on">☑ Check this</span></td></tr>
+      <tr><td>HOME_WIFI_SSID</td><td>UCSDRoboCar</td></tr>
+      <tr><td>HOME_WIFI_PASSWORD</td><td>UCSDrobocars2018</td></tr>
+      <tr><td>AUTO_WIFI_ON_INTERVAL</td><td>60</td></tr>
+    </table>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Binding phrase is case-sensitive</strong><br><code>TritonAI</code> must be entered identically on both the TX and RX — including capitalisation. Any difference and they will never bind.</div>
+    </div>
+
+    <h3 class="sub-title">3.4 Flash the TX</h3>
+    <p>In the Actions section, confirm the serial port shows:</p>
+    <pre><code>/dev/tty/ACM0 (EdgeTX)     <span class="comment">← Linux / macOS</span>
+COM3 (EdgeTX)              <span class="comment">← Windows</span></code></pre>
+    <p>Click <strong>FLASH</strong> and wait for completion. When prompted, download the generated Lua script file.</p>
+
+    <h3 class="sub-title">3.5 Install the Lua Script on the SD Card</h3>
+    <ol>
+      <li>Unplug and power off the controller</li>
+      <li>Remove the SD card from the slot at the bottom</li>
+      <li>On the SD card, navigate to <code>SCRIPTS/TOOLS/</code></li>
+      <li>Copy the Lua file into this folder, replacing any existing file with the same name</li>
+      <li>Reinstall the SD card and power on</li>
+    </ol>
+
+    <div class="callout callout-ok">
+      <span class="icon">✅</span>
+      <div><strong>Verify TX firmware</strong><br>Press SYS → Tools → ExpressLRS on the controller and scroll to the bottom. The firmware version (3.3.2) should be visible.</div>
+    </div>
+  </section>
+
+  <!-- ── PHASE 4 ── -->
+  <section id="phase4">
+    <h2 class="section-title"><span class="phase-badge">Phase 4</span> Flash the Receiver (RX)</h2>
+
+    <h3 class="sub-title">4.1 Configure ExpressLRS Configurator — RX Target</h3>
+    <p>Still using version <strong>3.3.2</strong>. The firmware version MUST match the TX exactly.</p>
+    <table class="settings-table">
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td>Device category</td><td>RadioMaster 2.4 GHz</td></tr>
+      <tr><td>Device</td><td>RadioMaster RP3 Diversity 2.4GHz RX</td></tr>
+      <tr><td>Flashing Method</td><td>WiFi</td></tr>
+    </table>
+
+    <h3 class="sub-title">4.2 RX Device Options</h3>
+    <table class="settings-table">
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td>REGULATORY_DOMAIN_ISM_2400</td><td><span class="cb-on">☑ Check this</span></td></tr>
+      <tr><td>BINDING_PHRASE</td><td><span class="cb-on">☑ Check — enter: TritonAI (must match TX)</span></td></tr>
+      <tr><td>LOCK_ON_FIRST_CONNECTION</td><td><span class="cb-on">☑ Check this</span></td></tr>
+      <tr><td>RCVR_UART_BAUD</td><td><span class="cb-on">☑ Check — set value to: 115200</span></td></tr>
+      <tr><td>HOME_WIFI_SSID</td><td>UCSDRoboCar</td></tr>
+      <tr><td>HOME_WIFI_PASSWORD</td><td>UCSDrobocars2018</td></tr>
+      <tr><td>AUTO_WIFI_ON_INTERVAL</td><td>60</td></tr>
+    </table>
+
+    <div class="callout callout-tip">
+      <span class="icon">📡</span>
+      <div><strong>Why 115,200 baud?</strong><br>The Arduino code reads SBUS data at 115,200 baud. RCVR_UART_BAUD overrides the ELRS default (420,000 baud for CRSF) so both sides communicate at the same rate. If this is left unchecked, the Arduino will receive garbage data.</div>
+    </div>
+
+    <h3 class="sub-title">4.3 Build the Firmware</h3>
+    <p>Click <strong>BUILD</strong> (not Flash). Save the generated <code>firmware.bin</code> to a known location.</p>
+
+    <h3 class="sub-title">4.4 Put the RX into WiFi Mode</h3>
+    <ol>
+      <li>Power the RX from the buck converter at 5 V</li>
+      <li>Power on the RX</li>
+      <li>Wait approximately <strong>60 seconds</strong> with no TX powered nearby</li>
+      <li>The LED will transition: slow blink → <strong>very fast blink</strong> = WiFi mode active</li>
+    </ol>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>RX resets before WiFi mode</strong><br>If the RX resets before 60 seconds, it's not getting enough power. Buck converter output should be 5 V with at least 500 mA. Never power the RX from the Arduino 5 V pin.</div>
+    </div>
+
+    <h3 class="sub-title">4.5 Flash the RX via WiFi</h3>
+    <ol>
+      <li>Connect your computer to WiFi: <strong>SSID: ExpressLRS RX</strong> / <strong>Password: expresslrs</strong></li>
+      <li>A captive portal opens automatically — if not, navigate to <code>10.0.0.1</code></li>
+      <li>Upload the <code>firmware.bin</code> file from step 4.3</li>
+    </ol>
+
+    <div class="callout callout-tip">
+      <span class="icon">💡</span>
+      <div><strong>"Targets Mismatch" dialog — this is expected, click Flash Anyway</strong><br>
+      You'll see: <em>Current: UNIFIED_ESP32_2400_RX / Uploaded: UNIFIED_ESP8285_2400_RX</em><br>
+      This is because the factory firmware used an older chip name (ESP32 → ESP8285). Same hardware. Click <strong>Flash Anyway</strong> — it is safe.</div>
+    </div>
+
+    <div class="callout callout-ok">
+      <span class="icon">✅</span>
+      <div><strong>Re-flashing later</strong><br>Power-cycle the RX 3–4 times quickly, then wait for fast-blink WiFi mode. In the Configurator, go to Network Devices, select your receiver, and flash.</div>
+    </div>
+  </section>
+
+  <!-- ── PHASE 5 ── -->
+  <section id="phase5">
+    <h2 class="section-title"><span class="phase-badge">Phase 5</span> Bind the Controller to the Car</h2>
+
+    <h3 class="sub-title">5.1 Power Both Devices On</h3>
+    <p>Binding is automatic — no button presses required. Both devices were flashed with the same binding phrase, so they find each other on power-up.</p>
+    <ol>
+      <li>Turn on the Radiomaster controller</li>
+      <li>Power on the RX on the car</li>
+      <li>Within a few seconds the RX LED changes from blinking to <strong>solid</strong> — link established</li>
+    </ol>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>RX LED keeps blinking?</strong><br>Confirm both TX and RX were flashed with: (1) the same ELRS version — 3.3.2, and (2) the exact same binding phrase — TritonAI. A mismatch on either prevents binding.</div>
+    </div>
+
+    <h3 class="sub-title">5.2 Set the RX Output Protocol to SBUS</h3>
+    <p>After binding, tell the RX to output SBUS (which the Arduino reads). Do this once — the setting persists.</p>
+    <ol>
+      <li>On the controller, press <strong>SYS → Tools → ExpressLRS</strong></li>
+      <li>Scroll to the bottom and select <strong>Other Devices</strong></li>
+      <li>Select your RX from the list and wait for it to load</li>
+      <li><strong>Change the output protocol from CRSF to SBUS</strong> and save</li>
+      <li>Power cycle the RX to apply the change</li>
+    </ol>
+
+    <div class="callout callout-ok">
+      <span class="icon">✅</span>
+      <div><strong>Verify the link</strong><br>Return to SYS → Tools → ExpressLRS. Signal strength and packet rate should be displayed, confirming an active RF link.</div>
+    </div>
+  </section>
+
+  <!-- ── PHASE 6 ── -->
+  <section id="phase6">
+    <h2 class="section-title"><span class="phase-badge">Phase 6</span> VESC &amp; Final Configuration</h2>
+
+    <h3 class="sub-title">6.1 Enable Kill Switch in VESC Tool</h3>
+    <ol>
+      <li>Open VESC Tool and connect to the VESC over USB</li>
+      <li>Navigate to <strong>App Settings → General</strong></li>
+      <li>Find the Kill Switch Mode setting</li>
+      <li>Check your relay wiring. On the standard car build, 5 V is Normally Closed (NC) so ground is Normally Open (NO)</li>
+      <li>Set <strong>Kill Switch Mode → ADC2 Low</strong></li>
+    </ol>
+
+    <h3 class="sub-title">6.2 Verify End-to-End</h3>
+    <ol>
+      <li>Power on the controller</li>
+      <li>Power on the car (RX + Arduino + VESC)</li>
+      <li>Confirm RX LED is solid (bound)</li>
+      <li>On the Raspberry Pi 5, check that the Arduino appears as a joystick:</li>
+    </ol>
+    <pre><code>ls /dev/input/js*</code></pre>
+    <ol start="5">
+      <li>Move the controller sticks and confirm input values change</li>
+    </ol>
+  </section>
+
+  <!-- ── TROUBLESHOOT ── -->
+  <section id="troubleshoot">
+    <h2 class="section-title">Troubleshooting Reference</h2>
+    <table class="trouble-table">
+      <tr><th>Symptom</th><th>Fix</th></tr>
+      <tr>
+        <td>LiPo cells inserted but controller won't transmit</td>
+        <td>Ensure both cells are seated correctly. The LED lights with even one cell but the radio needs both to operate.</td>
+      </tr>
+      <tr>
+        <td>EdgeTX Passthrough port not found in Configurator</td>
+        <td>Controller must be on, plugged into the TOP USB-C port, and set to USB Serial (VCP) — not HID, not Storage.</td>
+      </tr>
+      <tr>
+        <td>"Targets Mismatch" warning during RX flash</td>
+        <td>Expected — click Flash Anyway. Factory firmware used a different chip name (ESP32 vs ESP8285). Same hardware.</td>
+      </tr>
+      <tr>
+        <td>RX resets before entering WiFi mode</td>
+        <td>RX is underpowered. Use the buck converter at 5 V — never the Arduino 5 V pin.</td>
+      </tr>
+      <tr>
+        <td>TX and RX won't bind after flashing</td>
+        <td>Verify: (1) same ELRS version on both — 3.3.2, (2) identical binding phrase — TritonAI. Reflash if unsure.</td>
+      </tr>
+      <tr>
+        <td>Controller is bound but car doesn't respond</td>
+        <td>RX output protocol is probably still CRSF. Go to SYS → Tools → ExpressLRS → Other Devices → [your RX] → change to SBUS. Power cycle.</td>
+      </tr>
+      <tr>
+        <td>Arduino receives garbage / no data from RX</td>
+        <td>RCVR_UART_BAUD was not set to 115,200. Reflash the RX with RCVR_UART_BAUD checked and value = 115200.</td>
+      </tr>
+      <tr>
+        <td>Raspberry Pi doesn't see Arduino as joystick</td>
+        <td>DEBUG_LOG is enabled in platformio.ini — it conflicts with HID. Comment it out and re-flash the Arduino.</td>
+      </tr>
+      <tr>
+        <td>Arduino upload fails with port error</td>
+        <td>Double-press the reset button on the Arduino immediately before clicking Upload to force bootloader mode.</td>
+      </tr>
+      <tr>
+        <td>Kill switch not working</td>
+        <td>In VESC Tool: App Settings → General → Kill Switch Mode → set to ADC2 Low (5 V normally closed relay wiring).</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- ── APPENDIX ── -->
+  <section id="appendix">
+    <h2 class="section-title">Appendix — Receiver IPs &amp; Links</h2>
+
+    <h3 class="sub-title">Known Receiver IP Addresses (Lab Network — UCSDRoboCar)</h3>
+    <table class="ip-table">
+      <tr><th>Car</th><th>IP Address</th><th>Hostname / Notes</th></tr>
+      <tr><td>Receiver 1 (Yellow)</td><td>192.168.10.142</td><td>elrs_rx_40F520CB5EE9 · RM RP3</td></tr>
+      <tr><td>Receiver 2 (Blue)</td><td>192.168.10.195</td><td>elrs_rx_40F520CB54D1 · RM RP3</td></tr>
+      <tr><td>Receiver 3</td><td>192.168.10.163</td><td>—</td></tr>
+      <tr><td>Receiver 4</td><td>192.168.10.69</td><td>elrs_rx_5002913D3BBB · RM RP3</td></tr>
+      <tr><td>1/5th scale (old)</td><td>192.168.10.215</td><td>—</td></tr>
+    </table>
+
+    <h3 class="sub-title">Key Links</h3>
+    <table>
+      <tr><th>Resource</th><th>URL</th></tr>
+      <tr><td>ExpressLRS Configurator</td><td><a href="https://expresslrs.org/quick-start/installing-configurator/" style="color:var(--accent)">expresslrs.org/quick-start/installing-configurator/</a></td></tr>
+      <tr><td>ELRSController repo</td><td><a href="https://github.com/Triton-AI/ELRSController" style="color:var(--accent)">github.com/Triton-AI/ELRSController</a></td></tr>
+      <tr><td>UCSD ECE/MAE 148 docs</td><td><a href="https://ucsd-ecemae-148.github.io/markdown-documentation/Radiomaster_Setup/" style="color:var(--accent)">ucsd-ecemae-148.github.io/...</a></td></tr>
+    </table>
+  </section>
+
+  <!-- ── ELRS VERSION GUIDE ── -->
+  <section id="elrs-versions">
+    <h2 class="section-title">ELRS Version Guide</h2>
+    <p>As of early 2026, ExpressLRS has released versions up through 3.6.x and 4.0.0 RC. Here's what you need to know for this lab:</p>
+
+    <div class="version-box">
+      <h4>Version Compatibility Overview</h4>
+      <div class="version-row">
+        <span class="vname">3.3.2</span>
+        <span class="vstatus locked">✓ Locked for this lab</span>
+      </div>
+      <div class="version-row">
+        <span class="vname">3.4.x – 3.6.x</span>
+        <span class="vstatus ok">Compatible with 3.x — upgradeable</span>
+      </div>
+      <div class="version-row">
+        <span class="vname">4.0.x</span>
+        <span class="vstatus breaking">⚠ Breaking — NOT compatible with 3.x</span>
+      </div>
+    </div>
+
+    <h3 class="sub-title">Should students use a newer 3.x version?</h3>
+    <p><strong>Recommendation: stick to 3.3.2 for this lab.</strong> Here's the reasoning:</p>
+    <ul>
+      <li>3.3.2 is proven, tested, and all the lab instructions match it exactly (Configurator version, Lua script, etc.)</li>
+      <li>All 3.x versions are mutually compatible — so if you do upgrade, both TX and RX must be flashed to the same newer version</li>
+      <li>Later 3.x versions (3.5.x, 3.6.x) include bug fixes and Lua improvements, but nothing that affects SBUS output or UART baud rate for this use case</li>
+      <li>If students want to upgrade, they can safely use any 3.x version (3.4–3.6) — just flash both TX and RX to the same version and re-verify RCVR_UART_BAUD = 115200</li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Do NOT use ELRS v4.x</strong><br>
+      ELRS version 4 is a major breaking change — it is completely incompatible with v3.x and requires all hardware to be updated simultaneously. It also removes support for some older hardware. Avoid v4 for this lab until the course officially supports it.</div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="icon">💡</span>
+      <div><strong>Bottom line for students</strong><br>If your TX or RX already has a newer 3.x version (e.g. 3.5.x or 3.6.x) pre-installed, you can use it — just flash the other device to match. If starting fresh, use 3.3.2 as the guide instructs.</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Active nav highlighting on scroll
+  const sections = document.querySelectorAll('section[id], div[id="overview"], div[id="quick-ref"]');
+  const navLinks = document.querySelectorAll('nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
